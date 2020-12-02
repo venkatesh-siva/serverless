@@ -58,7 +58,6 @@ public class EmailEvent implements RequestHandler<SNSEvent, Object> {
 
         String messageFromSQS =  snsEvent.getRecords().get(0).getSNS().getMessage();
         String email = messageFromSQS.split(",")[0];
-        context.getLogger().log("Sending email to "+ email);
         String questionId = messageFromSQS.split(",")[1];
         String answerId = messageFromSQS.split(",")[2];
         String questionLink = messageFromSQS.split(",")[3];
@@ -70,12 +69,12 @@ public class EmailEvent implements RequestHandler<SNSEvent, Object> {
         	bodyMessage="An answer answerId:"+answerId+" is created";
         }
         else if(action.contentEquals("updateanswer")) {
-        	bodyMessage="An answer answerId:\"+answerId+\" is updated";
+        	bodyMessage="An answer answerId:"+answerId+" is updated";
         }
         else if(action.contentEquals("deleteanswer")) {
-        	bodyMessage = "An answer answerId:\"+answerId+\" is deleted";
+        	bodyMessage = "An answer answerId:"+answerId+" is deleted";
         }
-        context.getLogger().log("QuestionId: " + questionId + "questionId=========");
+        
 
         Item item = dynamoDB.getTable("csye6225").getItem("id", hashVal);
         if(item == null) {
@@ -84,6 +83,7 @@ public class EmailEvent implements RequestHandler<SNSEvent, Object> {
 
         long ttlTime = Instant.now().getEpochSecond() + 15*60;
         if ((item != null && Long.parseLong(item.get("ttl").toString()) < Instant.now().getEpochSecond() || item == null)) {
+        	context.getLogger().log("Sending email to "+ email);
             PutItemSpec item2 = new PutItemSpec().withItem(new Item()
                     .withPrimaryKey("id", hashVal)
                     .withLong("ttl", ttlTime));
