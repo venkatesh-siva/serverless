@@ -60,20 +60,24 @@ public class EmailEvent implements RequestHandler<SNSEvent, Object> {
         String email = messageFromSQS.split(",")[0];
         context.getLogger().log("Sending email to "+ email);
         String questionId = messageFromSQS.split(",")[1];
-        String action = messageFromSQS.split(",")[2];
+        String answerId = messageFromSQS.split(",")[2];
+        String questionLink = messageFromSQS.split(",")[3];
+        String answerLink = messageFromSQS.split(",")[4];
+        String action = messageFromSQS.split(",")[5];
+        String hashVal = messageFromSQS.split(",")[6];
         String bodyMessage=null ;
         if(action.contentEquals("createanswer")) {
-        	bodyMessage="answer is created";
+        	bodyMessage="An answer answerId:"+answerId+" is created";
         }
         else if(action.contentEquals("updateanswer")) {
-        	bodyMessage="answer is updated";
+        	bodyMessage="An answer answerId:\"+answerId+\" is updated";
         }
         else if(action.contentEquals("deleteanswer")) {
-        	bodyMessage = "answer is deleted";
+        	bodyMessage = "An answer answerId:\"+answerId+\" is deleted";
         }
         context.getLogger().log("QuestionId: " + questionId + "questionId=========");
 
-        Item item = dynamoDB.getTable("csye6225").getItem("id", email);
+        Item item = dynamoDB.getTable("csye6225").getItem("id", hashVal);
         if(item == null) {
 
         }
@@ -81,11 +85,14 @@ public class EmailEvent implements RequestHandler<SNSEvent, Object> {
         long ttlTime = Instant.now().getEpochSecond() + 15*60;
         if ((item != null && Long.parseLong(item.get("ttl").toString()) < Instant.now().getEpochSecond() || item == null)) {
             PutItemSpec item2 = new PutItemSpec().withItem(new Item()
-                    .withPrimaryKey("id", email)
-                    .withString("quesetionId", questionId)
+                    .withPrimaryKey("id", hashVal)
                     .withLong("ttl", ttlTime));
             dynamoDB.getTable("csye6225").putItem(item2);
-            String link = bodyMessage+ " for you question:"+ questionId;
+            String link=null;
+            if(answerLink.trim().equals(""))
+            	link = bodyMessage+ " for you question:"+ questionId+"\n QuestionLink:"+questionLink;
+            else
+            	link = bodyMessage+ " for you question:"+ questionId+"\n QuestionLink:"+questionLink+"\n AnswerLink:"+answerLink;
                     context.getLogger().log("AWS request ID:" + context.getAwsRequestId());
             context.getLogger().log("AWS message ID:" + snsEvent.getRecords().get(0).getSNS().getMessageId());
 
