@@ -25,15 +25,13 @@ jobs:
     - name: Build with Maven
       run: |
         echo "${{ env.ARTIFACT_NAME }}"
-        pwd
-        ls
         mvn package
-        pwd
-        ls -al
         ls -al target
     
     - name: Build Deployment Artifact
-      run: mv target/lambda-0.0.1-SNAPSHOT.jar ${{env.ARTIFACT_NAME}}
+      run: |
+        cd target
+        mv lambda-0.0.1-SNAPSHOT.jar ${{env.ARTIFACT_NAME}}
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
@@ -44,7 +42,8 @@ jobs:
 
     - name: Copy Artifact to S3
       run: |
-        aws s3 sync ./codedeploy_artifact s3://${{ secrets.S3_CODEDEPLOY_BUCKET }}
+        cd target
+        aws s3 cp ${{env.ARTIFACT_NAME}} s3://${{ secrets.S3_CODEDEPLOY_BUCKET }}
     - name: Lambda API call
       run: aws lambda update-function-code --function-name  emailOnSNS  --s3-bucket ${{ secrets.S3_CODEDEPLOY_BUCKET }} --s3-key ${{env.ARTIFACT_NAME}} --region ${{ env.AWS_REGION }} > log.txt
 
