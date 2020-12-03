@@ -89,7 +89,7 @@ public class EmailEvent implements RequestHandler<SNSEvent, Object> {
                     .withLong("ttl", ttlTime));
             dynamoDB.getTable("csye6225").putItem(item2);
             String link=null;
-            if(answerLink.trim().equals(""))
+            if(action.contentEquals("deleteanswer"))
             	link = bodyMessage+ " for you question:"+ questionId+"\n QuestionLink:"+questionLink;
             else
             	link = bodyMessage+ " for you question:"+ questionId+"\n QuestionLink:"+questionLink+"\n AnswerLink:"+answerLink;
