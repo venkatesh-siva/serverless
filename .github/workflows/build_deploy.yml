@@ -9,6 +9,8 @@ on:
   push:
     branches: [ main ]
 
+  workflow_dispatch:
+
 jobs:
   ci_cd:
     runs-on: ubuntu-latest
