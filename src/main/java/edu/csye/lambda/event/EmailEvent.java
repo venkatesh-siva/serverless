@@ -86,7 +86,10 @@ public class EmailEvent implements RequestHandler<SNSEvent, Object> {
         	context.getLogger().log("Sending email to "+ email);
             PutItemSpec item2 = new PutItemSpec().withItem(new Item()
                     .withPrimaryKey("id", hashVal)
-                    .withLong("ttl", ttlTime));
+                    .withLong("ttl", ttlTime)
+                    .withString("action", action)
+                    .withString("questionId", questionId)
+                    .withString("answerId", answerId));
             dynamoDB.getTable("csye6225").putItem(item2);
             String link=null;
             if(action.contentEquals("deleteanswer"))
